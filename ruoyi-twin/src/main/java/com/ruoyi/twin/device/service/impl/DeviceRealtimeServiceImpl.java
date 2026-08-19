@@ -1,0 +1,102 @@
+package com.ruoyi.twin.device.service.impl;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import com.ruoyi.twin.common.enums.ObjectTypeEnum;
+import com.ruoyi.twin.common.exception.BizException;
+import com.ruoyi.twin.common.result.ResultCodeEnum;
+import com.ruoyi.twin.device.dto.DeviceMetricsDTO;
+import com.ruoyi.twin.device.entity.DeviceRealtimeDO;
+import com.ruoyi.twin.device.mapper.DeviceRealtimeMapper;
+import com.ruoyi.twin.device.mapper.DeviceTelemetryMapper;
+import com.ruoyi.twin.device.service.DeviceRealtimeService;
+import com.ruoyi.twin.device.vo.DeviceRealtimeVO;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
+
+/**
+ * 监测对象实时状态服务实现，设备与市政设施共用
+ *
+ * @author lvfan
+ */
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class DeviceRealtimeServiceImpl implements DeviceRealtimeService {
+
+    private final DeviceRealtimeMapper deviceRealtimeMapper;
+
+    private final DeviceTelemetryMapper deviceTelemetryMapper;
+
+    private final ObjectMapper objectMapper;
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void saveSnapshots(List<DeviceMetricsDTO> snapshots, boolean writeTelemetry) {
+        if (CollectionUtils.isEmpty(snapshots)) {
+            return;
+        }
+        deviceRealtimeMapper.batchUpsert(snapshots);
+        if (writeTelemetry) {
+            deviceTelemetryMapper.batchInsert(snapshots);
+        }
+    }
+
+    @Override
+    public DeviceRealtimeVO getRealtime(Long objectId, ObjectTypeEnum objectType) {
+        DeviceRealtimeDO realtime = deviceRealtimeMapper.selectByDeviceId(objectId, objectType.name());
+        if (realtime == null) {
+            throw new BizException(ResultCodeEnum.NOT_FOUND,
+                    objectType.getLabel() + "暂无实时数据：" + objectId);
+        }
+        DeviceRealtimeVO vo = new DeviceRealtimeVO();
+        vo.setDeviceId(realtime.getDeviceId());
+        vo.setObjectType(realtime.getObjectType());
+        vo.setMetrics(parseJson(realtime.getMetricsJson()));
+        vo.setAlarmLevel(realtime.getAlarmLevel());
+        vo.setTs(realtime.getUpdateTime());
+        return vo;
+    }
+
+    @Override
+    public List<DeviceRealtimeVO> toRealtimeVoList(List<DeviceMetricsDTO> snapshots) {
+        if (CollectionUtils.isEmpty(snapshots)) {
+            return Collections.emptyList();
+        }
+        return snapshots.stream().map(this::toVo).collect(Collectors.toList());
+    }
+
+    private DeviceRealtimeVO toVo(DeviceMetricsDTO snapshot) {
+        DeviceRealtimeVO vo = new DeviceRealtimeVO();
+        vo.setDeviceId(snapshot.getDeviceId());
+        vo.setObjectType(snapshot.getObjectType());
+        vo.setMetrics(parseJson(snapshot.getMetricsJson()));
+        vo.setAlarmLevel(snapshot.getAlarmLevel());
+        vo.setTs(snapshot.getTs());
+        return vo;
+    }
+
+    /**
+     * 把 jsonb 文本转成 JsonNode，避免响应体里出现转义后的字符串
+     */
+    private JsonNode parseJson(String json) {
+        if (!StringUtils.hasText(json)) {
+            return null;
+        }
+        try {
+            return objectMapper.readTree(json);
+        } catch (JacksonException e) {
+            log.error("实时指标 JSON 无法解析，长度 {}", json.length(), e);
+            throw new BizException(ResultCodeEnum.SYSTEM_ERROR);
+        }
+    }
+}

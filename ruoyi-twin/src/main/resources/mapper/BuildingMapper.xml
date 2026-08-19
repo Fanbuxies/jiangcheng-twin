@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.twin.building.mapper.BuildingMapper">
+
+    <resultMap id="buildingDetailMap" type="com.ruoyi.twin.building.entity.BuildingDO">
+        <id column="id" property="id"/>
+        <result column="osm_id" property="osmId"/>
+        <result column="name" property="name"/>
+        <result column="building_type" property="buildingType"/>
+        <result column="levels" property="levels"/>
+        <result column="height" property="height"/>
+        <result column="height_source" property="heightSource"/>
+        <result column="base_altitude" property="baseAltitude"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="footprint_geo_json" property="footprintGeoJson"/>
+        <result column="lon" property="lon"/>
+        <result column="lat" property="lat"/>
+    </resultMap>
+
+    <!-- 四个边界由 service 层保证同时有值或同时为 null；命中 footprint 上的 GIST 索引 -->
+    <sql id="bboxFilter">
+        <if test="west != null and south != null and east != null and north != null">
+            AND ST_Intersects(b.footprint, ST_MakeEnvelope(#{west}, #{south}, #{east}, #{north}, 4326))
+        </if>
+    </sql>
+
+    <select id="selectDetailById" resultMap="buildingDetailMap">
+        SELECT
+            b.id,
+            b.osm_id,
+            b.name,
+            b.building_type,
+            b.levels,
+            b.height,
+            b.height_source,
+            b.base_altitude,
+            b.created_at,
+            ST_AsGeoJSON(b.footprint, 6) AS footprint_geo_json,
+            ST_X(b.center) AS lon,
+            ST_Y(b.center) AS lat
+        FROM t_building AS b
+        WHERE b.id = #{id}
+    </select>
+
+    <!-- FeatureCollection 直接由 PostGIS 拼装，避免 Java 侧逐要素拼 JSON -->
+    <select id="selectGeoJson" resultType="java.lang.String">
+        SELECT jsonb_build_object(
+            'type', 'FeatureCollection',
+            'features', coalesce(jsonb_agg(feature.value), '[]'::jsonb)
+        )::text
+        FROM (
+            SELECT jsonb_build_object(
+                'type', 'Feature',
+                'id', b.id,
+                'geometry', ST_AsGeoJSON(b.footprint, 6)::jsonb,
+                'properties', jsonb_build_object(
+                    'name', b.name,
+                    'buildingType', b.building_type,
+                    'levels', b.levels,
+                    'height', b.height,
+                    'heightSource', b.height_source,
+                    'baseAltitude', b.base_altitude
+                )
+            ) AS value
+            FROM t_building AS b
+            <where>
+                <include refid="bboxFilter"/>
+            </where>
+            ORDER BY b.id
+            LIMIT #{maxFeatures}
+        ) AS feature
+    </select>
+
+    <select id="countByBbox" resultType="java.lang.Long">
+        SELECT count(*)
+        FROM t_building AS b
+        <where>
+            <include refid="bboxFilter"/>
+        </where>
+    </select>
+
+    <select id="countAll" resultType="java.lang.Long">
+        SELECT count(*)
+        FROM t_building AS b
+    </select>
+
+    <!-- 分页由 MyBatis-Plus 拦截器生成 count 与 limit；count 为 0 时拦截器直接返回空列表不再执行本语句 -->
+    <select id="selectBuildingPage" resultMap="buildingDetailMap">
+        SELECT
+            b.id,
+            b.name,
+            b.building_type,
+            b.levels,
+            b.height,
+            b.height_source,
+            ST_X(b.center) AS lon,
+            ST_Y(b.center) AS lat
+        FROM t_building AS b
+        <where>
+            <if test="keyword != null">
+                AND b.name ILIKE '%' || #{keyword} || '%'
+            </if>
+            <if test="buildingType != null">
+                AND b.building_type = #{buildingType}
+            </if>
+        </where>
+        ORDER BY b.id
+    </select>
+
+    <!-- 几何由 PostGIS 构造：footprint 取中心点向四周扩张半个身位的矩形，center 为点位本身。
+         管理端新增的建筑没有真实轮廓，用近似矩形占位，后续接入真实测绘数据再替换 -->
+    <insert id="insertBuilding" useGeneratedKeys="true" keyProperty="building.id">
+        INSERT INTO t_building (name, building_type, levels, height, height_source, footprint, center)
+        VALUES (#{building.name},
+                #{building.buildingType},
+                #{building.levels},
+                #{building.height},
+                #{building.heightSource},
+                ST_MakeEnvelope(#{building.lon} - #{halfExtent}, #{building.lat} - #{halfExtent},
+                                #{building.lon} + #{halfExtent}, #{building.lat} + #{halfExtent}, 4326),
+                ST_SetSRID(ST_MakePoint(#{building.lon}, #{building.lat}), 4326))
+    </insert>
+
+    <!-- osm_id / base_altitude 是数据管线字段，管理端不感知，保持原值不覆盖 -->
+    <update id="updateBuilding">
+        UPDATE t_building
+        SET name = #{building.name},
+            building_type = #{building.buildingType},
+            levels = #{building.levels},
+            height = #{building.height},
+            height_source = #{building.heightSource},
+            footprint = ST_MakeEnvelope(#{building.lon} - #{halfExtent}, #{building.lat} - #{halfExtent},
+                                        #{building.lon} + #{halfExtent}, #{building.lat} + #{halfExtent}, 4326),
+            center = ST_SetSRID(ST_MakePoint(#{building.lon}, #{building.lat}), 4326)
+        WHERE id = #{building.id}
+    </update>
+
+</mapper>

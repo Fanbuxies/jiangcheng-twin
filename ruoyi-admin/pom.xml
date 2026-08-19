@@ -30,9 +30,17 @@
         </dependency>
 
         <!-- Mysql驱动包 -->
+        <!--
         <dependency>
             <groupId>com.mysql</groupId>
             <artifactId>mysql-connector-j</artifactId>
+        </dependency>
+        -->
+
+        <!-- PostgreSQL驱动包 -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
         </dependency>
 
         <!-- 核心模块-->

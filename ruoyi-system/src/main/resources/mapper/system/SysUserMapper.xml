@@ -67,19 +67,19 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 			AND u.user_id = #{userId}
 		</if>
 		<if test="loginName != null and loginName != ''">
-			AND u.login_name like concat('%', #{loginName}, '%')
+			AND u.login_name like concat('%', cast(#{loginName} as varchar), '%')
 		</if>
 		<if test="status != null and status != ''">
 			AND u.status = #{status}
 		</if>
 		<if test="phonenumber != null and phonenumber != ''">
-			AND u.phonenumber like concat('%', #{phonenumber}, '%')
+			AND u.phonenumber like concat('%', cast(#{phonenumber} as varchar), '%')
 		</if>
 		<if test="params.beginTime != null and params.beginTime != ''"><!-- 开始时间检索 -->
-			AND date_format(u.create_time,'%Y%m%d') &gt;= date_format(#{params.beginTime},'%Y%m%d')
+			AND to_char(u.create_time,'yyyyMMdd') &gt;= to_char(cast(#{params.beginTime} as date),'yyyyMMdd')
 		</if>
 		<if test="params.endTime != null and params.endTime != ''"><!-- 结束时间检索 -->
-			AND date_format(u.create_time,'%Y%m%d') &lt;= date_format(#{params.endTime},'%Y%m%d')
+			AND to_char(u.create_time,'yyyyMMdd') &lt;= to_char(cast(#{params.endTime} as date),'yyyyMMdd')
 		</if>
 		<if test="deptId != null and deptId != 0">
 			AND (u.dept_id = #{deptId} OR u.dept_id IN ( SELECT t.dept_id FROM sys_dept t WHERE FIND_IN_SET (#{deptId},ancestors) ))
@@ -96,10 +96,10 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 			 left join sys_role r on r.role_id = ur.role_id
 	    where u.del_flag = '0' and r.role_id = #{roleId}
 	    <if test="loginName != null and loginName != ''">
-			AND u.login_name like concat('%', #{loginName}, '%')
+			AND u.login_name like concat('%', cast(#{loginName} as varchar), '%')
 		</if>
 		<if test="phonenumber != null and phonenumber != ''">
-			AND u.phonenumber like concat('%', #{phonenumber}, '%')
+			AND u.phonenumber like concat('%', cast(#{phonenumber} as varchar), '%')
 		</if>
 		<!-- 数据范围过滤 -->
 		${params.dataScope}
@@ -114,10 +114,10 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	    where u.del_flag = '0' and (r.role_id != #{roleId} or r.role_id IS NULL)
 	    and u.user_id not in (select u.user_id from sys_user u inner join sys_user_role ur on u.user_id = ur.user_id and ur.role_id = #{roleId})
 	    <if test="loginName != null and loginName != ''">
-			AND u.login_name like concat('%', #{loginName}, '%')
+			AND u.login_name like concat('%', cast(#{loginName} as varchar), '%')
 		</if>
 		<if test="phonenumber != null and phonenumber != ''">
-			AND u.phonenumber like concat('%', #{phonenumber}, '%')
+			AND u.phonenumber like concat('%', cast(#{phonenumber} as varchar), '%')
 		</if>
 		<!-- 数据范围过滤 -->
 		${params.dataScope}
@@ -171,11 +171,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	</update>
 	
 	<update id="resetUserPwd" parameterType="SysUser">
- 		update sys_user SET pwd_update_date = sysdate(), password = #{password}, salt = #{salt}, update_time = sysdate() where user_id = #{userId}
+ 		update sys_user SET pwd_update_date = now(), password = #{password}, salt = #{salt}, update_time = now() where user_id = #{userId}
 	</update>
 	
 	<update id="updateUserStatus" parameterType="SysUser">
- 		update sys_user SET status = #{status}, update_time = sysdate() where user_id = #{userId}
+ 		update sys_user SET status = #{status}, update_time = now() where user_id = #{userId}
 	</update>
 	
   	<update id="updateLoginInfo" parameterType="SysUser">
@@ -200,7 +200,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
  			<if test="pwdUpdateDate != null">pwd_update_date = #{pwdUpdateDate},</if>
  			<if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
  			<if test="remark != null">remark = #{remark},</if>
- 			update_time = sysdate()
+ 			update_time = now()
  		</set>
  		where user_id = #{userId}
 	</update>
@@ -239,8 +239,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
  			<if test="pwdUpdateDate != null">#{pwdUpdateDate},</if>
  			<if test="createBy != null and createBy != ''">#{createBy},</if>
  			<if test="remark != null and remark != ''">#{remark},</if>
- 			sysdate()
+ 			now()
  		)
 	</insert>
 	
-</mapper> 
+</mapper> 

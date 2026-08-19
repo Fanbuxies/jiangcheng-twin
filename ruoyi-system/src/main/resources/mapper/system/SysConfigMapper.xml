@@ -42,19 +42,19 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <include refid="selectConfigVo"/>
         <where>
 			<if test="configName != null and configName != ''">
-				AND config_name like concat('%', #{configName}, '%')
+				AND config_name like concat('%', cast(#{configName} as varchar), '%')
 			</if>
 			<if test="configType != null and configType != ''">
 				AND config_type = #{configType}
 			</if>
 			<if test="configKey != null and configKey != ''">
-				AND config_key like concat('%', #{configKey}, '%')
+				AND config_key like concat('%', cast(#{configKey} as varchar), '%')
 			</if>
 			<if test="params.beginTime != null and params.beginTime != ''"><!-- 开始时间检索 -->
-				and date_format(create_time,'%Y%m%d') &gt;= date_format(#{params.beginTime},'%Y%m%d')
+				and to_char(create_time,'yyyyMMdd') &gt;= to_char(cast(#{params.beginTime} as date),'yyyyMMdd')
 			</if>
 			<if test="params.endTime != null and params.endTime != ''"><!-- 结束时间检索 -->
-				and date_format(create_time,'%Y%m%d') &lt;= date_format(#{params.endTime},'%Y%m%d')
+				and to_char(create_time,'yyyyMMdd') &lt;= to_char(cast(#{params.endTime} as date),'yyyyMMdd')
 			</if>
 		</where>
     </select>
@@ -85,7 +85,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 			<if test="configType != null and configType != ''">#{configType},</if>
 			<if test="createBy != null and createBy != ''">#{createBy},</if>
 			<if test="remark != null and remark != ''">#{remark},</if>
- 			sysdate()
+ 			now()
 		)
     </insert>
 	 
@@ -98,7 +98,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="configType != null and configType != ''">config_type = #{configType},</if>
             <if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
             <if test="remark != null">remark = #{remark},</if>
- 			update_time = sysdate()
+ 			update_time = now()
         </set>
         where config_id = #{configId}
     </update>
@@ -114,4 +114,4 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         </foreach>
     </delete>
     
-</mapper>
+</mapper>

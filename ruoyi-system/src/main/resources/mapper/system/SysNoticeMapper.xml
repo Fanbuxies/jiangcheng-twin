@@ -31,13 +31,13 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <include refid="selectNoticeVo"/>
         <where>
 			<if test="noticeTitle != null and noticeTitle != ''">
-				AND notice_title like concat('%', #{noticeTitle}, '%')
+				AND notice_title like concat('%', cast(#{noticeTitle} as varchar), '%')
 			</if>
 			<if test="noticeType != null and noticeType != ''">
 				AND notice_type = #{noticeType}
 			</if>
 			<if test="createBy != null and createBy != ''">
-				AND create_by like concat('%', #{createBy}, '%')
+				AND create_by like concat('%', cast(#{createBy} as varchar), '%')
 			</if>
 		</where>
 		order by notice_id desc
@@ -59,7 +59,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 			<if test="status != null and status != ''">#{status}, </if>
 			<if test="remark != null and remark != ''">#{remark},</if>
  			<if test="createBy != null and createBy != ''">#{createBy},</if>
- 			sysdate()
+ 			now()
 		)
     </insert>
 	 
@@ -71,7 +71,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="noticeContent != null">notice_content = #{noticeContent}, </if>
             <if test="status != null and status != ''">status = #{status}, </if>
             <if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
- 			update_time = sysdate()
+ 			update_time = now()
         </set>
         where notice_id = #{noticeId}
     </update>
@@ -83,4 +83,4 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         </foreach>
     </delete>
     
-</mapper>
+</mapper>

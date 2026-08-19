@@ -2,13 +2,19 @@
 spring:
     datasource:
         type: com.alibaba.druid.pool.DruidDataSource
-        driverClassName: com.mysql.cj.jdbc.Driver
+        # MySQL 驱动（已切换为 PostgreSQL，保留备查）
+        # driverClassName: com.mysql.cj.jdbc.Driver
+        driverClassName: org.postgresql.Driver
         druid:
             # 主库数据源
             master:
-                url: jdbc:mysql://localhost:3306/ry?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
-                username: root
-                password: password
+                # MySQL 连接（已切换为 PostgreSQL，保留备查）
+                # url: jdbc:mysql://localhost:3306/ry?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
+                # username: root
+                # password: password
+                url: jdbc:postgresql://localhost:5434/ry?currentSchema=public&stringtype=unspecified
+                username: twin
+                password: twin123
             # 从库数据源
             slave:
                 # 从数据源开关/默认关闭
@@ -34,8 +40,8 @@ spring:
             minEvictableIdleTimeMillis: 300000
             # 配置一个连接在池中最大生存的时间，单位是毫秒
             maxEvictableIdleTimeMillis: 900000
-            # 配置检测连接是否有效
-            validationQuery: SELECT 1 FROM DUAL
+            # 配置检测连接是否有效（MySQL 为 SELECT 1 FROM DUAL）
+            validationQuery: SELECT 1
             testWhileIdle: true
             testOnBorrow: false
             testOnReturn: false

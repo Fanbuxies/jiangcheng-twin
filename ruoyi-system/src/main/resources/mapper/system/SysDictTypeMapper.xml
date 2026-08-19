@@ -24,19 +24,19 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	    <include refid="selectDictTypeVo"/>
 		<where>
 		    <if test="dictName != null and dictName != ''">
-				AND dict_name like concat('%', #{dictName}, '%')
+				AND dict_name like concat('%', cast(#{dictName} as varchar), '%')
 			</if>
 			<if test="status != null and status != ''">
 				AND status = #{status}
 			</if>
 			<if test="dictType != null and dictType != ''">
-				AND dict_type like concat('%', #{dictType}, '%')
+				AND dict_type like concat('%', cast(#{dictType} as varchar), '%')
 			</if>
 			<if test="params.beginTime != null and params.beginTime != ''"><!-- 开始时间检索 -->
-				and date_format(create_time,'%Y%m%d') &gt;= date_format(#{params.beginTime},'%Y%m%d')
+				and to_char(create_time,'yyyyMMdd') &gt;= to_char(cast(#{params.beginTime} as date),'yyyyMMdd')
 			</if>
 			<if test="params.endTime != null and params.endTime != ''"><!-- 结束时间检索 -->
-				and date_format(create_time,'%Y%m%d') &lt;= date_format(#{params.endTime},'%Y%m%d')
+				and to_char(create_time,'yyyyMMdd') &lt;= to_char(cast(#{params.endTime} as date),'yyyyMMdd')
 			</if>
 	    </where>
 	</select>
@@ -79,7 +79,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
  			<if test="status != null">status = #{status},</if>
  			<if test="remark != null">remark = #{remark},</if>
  			<if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
- 			update_time = sysdate()
+ 			update_time = now()
  		</set>
  		where dict_id = #{dictId}
 	</update>
@@ -98,8 +98,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
  			<if test="status != null">#{status},</if>
  			<if test="remark != null and remark != ''">#{remark},</if>
  			<if test="createBy != null and createBy != ''">#{createBy},</if>
- 			sysdate()
+ 			now()
  		)
 	</insert>
 	
-</mapper> 
+</mapper> 

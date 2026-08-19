@@ -30,8 +30,20 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	</select>
 
 	<insert id="saveOnline" parameterType="SysUserOnline">
-		replace into sys_user_online(sessionId, login_name, dept_name, ipaddr, login_location, browser, os, status, start_timestamp, last_access_time, expire_time, session_data)
-        values (#{sessionId}, #{loginName}, #{deptName}, #{ipaddr}, #{loginLocation}, #{browser}, #{os}, #{status}, #{startTimestamp}, #{lastAccessTime}, #{expireTime}, #{sessionData,jdbcType=BLOB,typeHandler=org.apache.ibatis.type.BlobTypeHandler})
+		insert into sys_user_online(sessionId, login_name, dept_name, ipaddr, login_location, browser, os, status, start_timestamp, last_access_time, expire_time, session_data)
+        values (#{sessionId}, #{loginName}, #{deptName}, #{ipaddr}, #{loginLocation}, #{browser}, #{os}, #{status}, #{startTimestamp}, #{lastAccessTime}, #{expireTime}, #{sessionData,jdbcType=BINARY,typeHandler=org.apache.ibatis.type.ByteArrayTypeHandler})
+        on conflict (sessionId) do update set
+            login_name = excluded.login_name,
+            dept_name = excluded.dept_name,
+            ipaddr = excluded.ipaddr,
+            login_location = excluded.login_location,
+            browser = excluded.browser,
+            os = excluded.os,
+            status = excluded.status,
+            start_timestamp = excluded.start_timestamp,
+            last_access_time = excluded.last_access_time,
+            expire_time = excluded.expire_time,
+            session_data = excluded.session_data
 	</insert>
 	
  	<delete id="deleteOnlineById" parameterType="String">
@@ -42,10 +54,10 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 		<include refid="selectOnlineVo"/>
 		<where>
 			<if test="ipaddr != null and ipaddr != ''">
-				AND ipaddr like concat('%', #{ipaddr}, '%')
+				AND ipaddr like concat('%', cast(#{ipaddr} as varchar), '%')
 			</if>
 			<if test="loginName != null and loginName != ''">
-				AND login_name like concat('%', #{loginName}, '%')
+				AND login_name like concat('%', cast(#{loginName} as varchar), '%')
 			</if>
 		</where>
 	</select>

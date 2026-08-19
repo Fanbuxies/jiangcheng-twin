@@ -45,7 +45,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 			AND parent_id = #{parentId}
 		</if>
 		<if test="deptName != null and deptName != ''">
-			AND dept_name like concat('%', #{deptName}, '%')
+			AND dept_name like concat('%', cast(#{deptName} as varchar), '%')
 		</if>
 		<if test="status != null and status != ''">
 			AND status = #{status}
@@ -79,11 +79,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	</select>
 
 	<select id="selectChildrenDeptById" parameterType="Long" resultMap="SysDeptResult">
-		select * from sys_dept where find_in_set(#{deptId}, ancestors)
+		select * from sys_dept where cast(#{deptId} as varchar) = any(string_to_array(ancestors, ','))
 	</select>
 	
 	<select id="selectNormalChildrenDeptById" parameterType="Long" resultType="int">
-		select count(*) from sys_dept where status = 0 and del_flag = '0' and find_in_set(#{deptId}, ancestors)
+		select count(*) from sys_dept where status = '0' and del_flag = '0' and cast(#{deptId} as varchar) = any(string_to_array(ancestors, ','))
 	</select>
 	
 	<insert id="insertDept" parameterType="SysDept">
@@ -110,7 +110,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
  			<if test="email != null and email != ''">#{email},</if>
  			<if test="status != null">#{status},</if>
  			<if test="createBy != null and createBy != ''">#{createBy},</if>
- 			sysdate()
+ 			now()
  		)
 	</insert>
 	
@@ -126,7 +126,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
  			<if test="email != null">email = #{email},</if>
  			<if test="status != null and status != ''">status = #{status},</if>
  			<if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
- 			update_time = sysdate()
+ 			update_time = now()
  		</set>
  		where dept_id = #{deptId}
 	</update>
@@ -159,4 +159,4 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 		update sys_dept set order_num = #{orderNum} where dept_id = #{deptId}
 	</update>
 
-</mapper> 
+</mapper> 

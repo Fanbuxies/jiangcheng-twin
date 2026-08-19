@@ -40,9 +40,30 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </select>
     
     <select id="selectDbTableColumnsByName" parameterType="String" resultMap="GenTableColumnResult">
-		select column_name, (case when (is_nullable = 'no' <![CDATA[ && ]]> column_key != 'PRI') then '1' else null end) as is_required, (case when column_key = 'PRI' then '1' else '0' end) as is_pk, ordinal_position as sort, column_comment, (case when extra = 'auto_increment' then '1' else '0' end) as is_increment, column_type
-		from information_schema.columns where table_schema = (select database()) and table_name = (#{tableName})
-		order by ordinal_position
+		select a.attname as column_name,
+		       (case when a.attnotnull and not exists (select 1 from pg_index i where i.indrelid = c.oid and i.indisprimary and a.attnum = any(i.indkey)) then '1' else null end) as is_required,
+		       (case when exists (select 1 from pg_index i where i.indrelid = c.oid and i.indisprimary and a.attnum = any(i.indkey)) then '1' else '0' end) as is_pk,
+		       a.attnum as sort,
+		       coalesce(col_description(a.attrelid, a.attnum), '') as column_comment,
+		       (case when a.attidentity <![CDATA[ <> ]]> '' or coalesce(pg_get_expr(d.adbin, d.adrelid), '') like 'nextval%' then '1' else '0' end) as is_increment,
+		       replace(replace(replace(replace(replace(replace(replace(replace(
+		           format_type(a.atttypid, a.atttypmod),
+		           'character varying', 'varchar'),
+		           'timestamp without time zone', 'timestamp'),
+		           'timestamp with time zone', 'timestamp'),
+		           'time without time zone', 'time'),
+		           'time with time zone', 'time'),
+		           'double precision', 'double'),
+		           'character', 'char'),
+		           'numeric', 'decimal') as column_type
+		from pg_attribute a
+		     join pg_class c on c.oid = a.attrelid
+		     join pg_namespace n on n.oid = c.relnamespace
+		     left join pg_attrdef d on d.adrelid = a.attrelid and d.adnum = a.attnum
+		where n.nspname = current_schema() and c.relkind = 'r'
+		  and c.relname::varchar = cast(#{tableName} as varchar)
+		  and a.attnum &gt; 0 and not a.attisdropped
+		order by a.attnum
 	</select>
     
     <insert id="insertGenTableColumn" parameterType="GenTableColumn" useGeneratedKeys="true" keyProperty="columnId">
@@ -85,7 +106,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 			<if test="dictType != null and dictType != ''">#{dictType},</if>
 			<if test="sort != null">#{sort},</if>
 			<if test="createBy != null and createBy != ''">#{createBy},</if>
-			sysdate()
+			now()
          )
     </insert>
 	 
@@ -106,7 +127,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             dict_type = #{dictType},
             sort = #{sort},
             update_by = #{updateBy},
-            update_time = sysdate()
+            update_time = now()
         </set>
         where column_id = #{columnId}
     </update>
@@ -125,4 +146,4 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         </foreach>
     </delete>
 
-</mapper>
+</mapper>

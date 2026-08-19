@@ -16,7 +16,7 @@ ruoyi:
 # 开发环境配置
 server:
   # 服务器的HTTP端口，默认为80
-  port: 80
+  port: 90
   servlet:
     # 应用的访问路径
     context-path: /
@@ -79,7 +79,8 @@ mybatis:
 
 # PageHelper分页插件
 pagehelper:
-  helperDialect: mysql
+  # MySQL 时为 mysql
+  helperDialect: postgresql
   supportMethodsArguments: true
   params: count=countSql
 

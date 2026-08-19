@@ -15,7 +15,7 @@ $ErrorActionPreference = 'Stop'
 # 容器名与库参数，与 docker-compose.yml 保持一致
 $ContainerName = 'twin-pg'
 $DbUser = 'twin'
-$DbName = 'twin'
+$DbName = 'ry'
 
 # 预建天数：今天 + FUTURE_DAYS 天。取 14 是留出两周容错窗口，
 # 脚本连漏两周也不会有新数据落回 default 分区

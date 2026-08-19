@@ -71,7 +71,7 @@ def connection_parameters() -> dict:
     return {
         "host": os.getenv("PGHOST", "localhost"),
         "port": int(os.getenv("PGPORT", "5434")),
-        "dbname": os.getenv("PGDATABASE", "twin"),
+        "dbname": os.getenv("PGDATABASE", "ry"),
         "user": os.getenv("PGUSER", "twin"),
         "password": password,
     }

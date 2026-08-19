@@ -1,6 +1,6 @@
 # 数字孪生合并进度
 
-更新时间：2026-08-20 01:36（Asia/Shanghai）
+更新时间：2026-08-20 02:20（Asia/Shanghai）
 
 ## 阶段 1：搬迁源码，编译通过
 
@@ -51,33 +51,34 @@
 
 ## 阶段 3：去 MyBatis-Plus 化
 
-- 状态：Gate 2 失败，按硬要求停止；未提交
-- Gate 2：失败
+- 状态：已完成，待本阶段提交
+- Gate 2：通过
   - 探针：`ruoyi-twin/src/test/java/com/ruoyi/twin/gate/BuildingPaginationGate.java`
-  - 目标：验证第 1 页、第 2 页、总数、页间 ID 不重复及顺序
-  - 实际错误：`java.lang.VerifyError: Bad return type`
-  - 失败位置：`com.github.pagehelper.parser.defaults.DefaultCountSqlParser.sqlToCount`
-  - 依赖证据：
-    - MyBatis-Plus 3.5.5 引入 `com.github.jsqlparser:jsqlparser:4.6`
-    - PageHelper 6.1.1 需要 `com.github.jsqlparser:jsqlparser:4.7`
-    - Maven 最终选择 4.6，导致 PageHelper 字节码验证失败
-- 当前未提交文件：
-  - `ruoyi-twin/src/main/java/com/ruoyi/twin/building/mapper/BuildingMapper.java`
-  - `ruoyi-twin/src/main/java/com/ruoyi/twin/building/service/impl/BuildingServiceImpl.java`
-  - `ruoyi-twin/src/main/resources/mapper/BuildingMapper.xml`
-  - `ruoyi-twin/src/test/java/com/ruoyi/twin/gate/BuildingPaginationGate.java`
-- 遗留问题：
-  - Gate 2 未通过，尚未批量改造其余 Mapper/Service
-  - 阶段 4 至阶段 7 尚未开始
+  - 结果：`GATE2_PASS total=29818 page1=20 page2=20 firstPageLastId=3536 secondPageFirstId=3537`
+  - 验证内容：总数、前两页各 20 条、页间 ID 不重复且顺序连续
+  - 历史失败根因：MyBatis-Plus 3.5.5 传递 JSqlParser 4.6，覆盖了 PageHelper 6.1.1 所需的 4.7；阶段 3 删除 MyBatis-Plus 后冲突彻底消失
+- 完成内容：
+  - 5 个 entity 删除 MyBatis-Plus 注解
+  - 5 个 Mapper 删除 `BaseMapper`，继承方法改为显式 SQL
+  - 建筑、设备、设施分页统一改为 PageHelper
+  - Mapper XML 移入 `resources/mapper/twin/`
+  - 删除 MyBatis-Plus 依赖、配置类与 yml 配置段
+  - 3 个分页 DTO 均保留 `@Max(500)`，对应入口均有 `@Valid`
+- 阶段验证：
+  - `mvn clean package -DskipTests`：8 个 Reactor 模块全部 `SUCCESS`
+  - `ruoyi-twin` 搜索 `com.baomidou` / `BaseMapper` / `IPage` / `Wrappers`：0 结果
+  - 源码与资源搜索 `com.wuhan`：0 结果；方案与进度文档保留历史说明
+  - 91 端口启动出现 `Started RuoYiApplication`，Druid 正常初始化，无 MyBatis 映射解析错误，`/login` 返回 200
+  - 宿主回归：系统管理 7 页、系统监控 4 页及代码生成列表均正常加载；用户条件查询返回 admin 单条；参数页第 2 页为第 11/11 条，操作日志第 2 页为第 11–16/16 条
 
 ## 验证清单总览
 
-1. 系统管理回归：未验证（缺少有效登录态，未猜测密码）
-2. 系统监控回归：未验证
-3. 系统工具代码生成回归：未验证
-4. 宿主分页总数和翻页：未验证
-5. 构建与包名/依赖清零：部分通过（构建通过，清零未完成）
-6. 应用启动与映射解析：未通过（阶段 3 前的依赖冲突）
+1. 系统管理回归：通过（用户/角色/菜单/部门/岗位/字典/参数列表；用户条件查询；参数翻页）
+2. 系统监控回归：通过（在线用户/定时任务/登录日志/操作日志列表；操作日志翻页）
+3. 系统工具代码生成回归：部分通过（列表加载正常；表导入与预览留待有安全候选表时验证）
+4. 宿主分页总数和翻页：通过（参数 11 条、操作日志 16 条，第二页条数与区间正确）
+5. 构建与包名/依赖清零：通过（代码与资源清零；文档保留历史文本）
+6. 应用启动与映射解析：通过
 7. 数字孪生菜单：未实现
 8. Cesium 场景：未实现
 9. 三个管理页 CRUD：未实现

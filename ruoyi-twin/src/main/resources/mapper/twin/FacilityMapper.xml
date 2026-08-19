@@ -57,7 +57,7 @@
         ORDER BY f.id
     </select>
 
-    <!-- 分页由 MyBatis-Plus 拦截器生成 count 与 limit；count 为 0 时拦截器直接返回空列表不再执行本语句 -->
+    <!-- 分页由 PageHelper 生成 count 与 limit -->
     <select id="selectFacilityPage" resultMap="facilityMap">
         SELECT
             f.id,

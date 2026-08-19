@@ -3,10 +3,6 @@ package com.ruoyi.twin.device.entity;
 import java.io.Serializable;
 import java.time.OffsetDateTime;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 /**
@@ -17,7 +13,6 @@ import lombok.Data;
  * @author lvfan
  */
 @Data
-@TableName("t_device_realtime")
 public class DeviceRealtimeDO implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -26,7 +21,6 @@ public class DeviceRealtimeDO implements Serializable {
      * 监测对象主键，由业务侧指定而非数据库生成。
      * objectType 为 DEVICE 时与 t_device.id 同值，为 FACILITY 时与 t_facility.id 同值
      */
-    @TableId(value = "device_id", type = IdType.INPUT)
     private Long deviceId;
 
     /**
@@ -37,7 +31,6 @@ public class DeviceRealtimeDO implements Serializable {
     /**
      * 指标 JSON 文本
      */
-    @TableField("metrics")
     private String metricsJson;
 
     /**

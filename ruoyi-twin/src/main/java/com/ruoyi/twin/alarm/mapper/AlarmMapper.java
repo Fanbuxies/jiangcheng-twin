@@ -2,9 +2,7 @@ package com.ruoyi.twin.alarm.mapper;
 
 import java.util.List;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.ruoyi.twin.alarm.dto.AlarmCreateDTO;
-import com.ruoyi.twin.alarm.entity.AlarmDO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -14,7 +12,7 @@ import org.apache.ibatis.annotations.Param;
  * @author lvfan
  */
 @Mapper
-public interface AlarmMapper extends BaseMapper<AlarmDO> {
+public interface AlarmMapper {
 
     /**
      * 批量新增告警，状态固定为 PENDING

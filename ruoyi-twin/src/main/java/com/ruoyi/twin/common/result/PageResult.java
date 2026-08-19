@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.github.pagehelper.PageInfo;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -44,14 +44,14 @@ public class PageResult<T> implements Serializable {
     private long size;
 
     /**
-     * 由 MyBatis-Plus 分页对象转换
+     * 由 PageHelper 分页对象转换
      */
-    public static <T> PageResult<T> of(IPage<T> page) {
-        return new PageResult<>(page.getRecords(), page.getTotal(), page.getCurrent(), page.getSize());
+    public static <T> PageResult<T> of(PageInfo<T> page) {
+        return new PageResult<>(page.getList(), page.getTotal(), page.getPageNum(), page.getPageSize());
     }
 
     /**
-     * 由已有集合手工组装，用于非 MyBatis-Plus 分页场景
+     * 由已有集合手工组装，用于转换分页记录类型
      */
     public static <T> PageResult<T> of(List<T> records, long total, long current, long size) {
         return new PageResult<>(records == null ? Collections.emptyList() : records, total, current, size);

@@ -4,9 +4,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
@@ -24,7 +23,6 @@ import com.ruoyi.twin.common.exception.BizException;
 import com.ruoyi.twin.common.result.PageResult;
 import com.ruoyi.twin.common.result.ResultCodeEnum;
 import com.ruoyi.twin.common.util.BboxUtils;
-import com.ruoyi.twin.device.entity.DeviceDO;
 import com.ruoyi.twin.device.mapper.DeviceMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -115,13 +113,14 @@ public class BuildingServiceImpl implements BuildingService {
 
     @Override
     public PageResult<BuildingPageVO> pageBuildings(BuildingPageQuery query) {
-        Page<BuildingDO> page = new Page<>(query.getCurrent(), query.getSize());
-        IPage<BuildingDO> result = buildingMapper.selectBuildingPage(
-                page, trimToNull(query.getKeyword()), trimToNull(query.getBuildingType()));
-        List<BuildingPageVO> records = result.getRecords().stream()
+        PageHelper.startPage(Math.toIntExact(query.getCurrent()), Math.toIntExact(query.getSize()));
+        List<BuildingDO> result = buildingMapper.selectBuildingPage(
+                trimToNull(query.getKeyword()), trimToNull(query.getBuildingType()));
+        PageInfo<BuildingDO> pageInfo = new PageInfo<>(result);
+        List<BuildingPageVO> records = result.stream()
                 .map(BuildingServiceImpl::toPageVo)
                 .collect(Collectors.toList());
-        return PageResult.of(records, result.getTotal(), result.getCurrent(), result.getSize());
+        return PageResult.of(records, pageInfo.getTotal(), pageInfo.getPageNum(), pageInfo.getPageSize());
     }
 
     private static BuildingPageVO toPageVo(BuildingDO building) {
@@ -160,8 +159,7 @@ public class BuildingServiceImpl implements BuildingService {
     @Override
     public void deleteBuilding(Long id) {
         requireBuildingExists(id);
-        Long deviceCount = deviceMapper.selectCount(
-                Wrappers.<DeviceDO>lambdaQuery().eq(DeviceDO::getBuildingId, id));
+        Long deviceCount = deviceMapper.countByBuildingId(id);
         if (deviceCount != null && deviceCount > 0) {
             throw new BizException("该建筑下存在 " + deviceCount + " 台设备，无法删除");
         }

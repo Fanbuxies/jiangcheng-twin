@@ -4,10 +4,6 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 /**
@@ -19,7 +15,6 @@ import lombok.Data;
  * @author lvfan
  */
 @Data
-@TableName("t_facility")
 public class FacilityDO implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -27,7 +22,6 @@ public class FacilityDO implements Serializable {
     /**
      * 主键
      */
-    @TableId(type = IdType.AUTO)
     private Long id;
 
     /**
@@ -83,12 +77,10 @@ public class FacilityDO implements Serializable {
     /**
      * 点位经度，由 ST_X 生成
      */
-    @TableField(exist = false)
     private Double lon;
 
     /**
      * 点位纬度，由 ST_Y 生成
      */
-    @TableField(exist = false)
     private Double lat;
 }

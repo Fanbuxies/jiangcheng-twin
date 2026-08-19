@@ -12,18 +12,6 @@ spring:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: Asia/Shanghai
 
-mybatis-plus:
-  # mapper xml 统一放 resources/mapper 下，当前尚无业务 mapper
-  mapper-locations: classpath*:mapper/**/*.xml
-  configuration:
-    # 数据库下划线字段自动映射为驼峰属性，如 height_source -> heightSource
-    map-underscore-to-camel-case: true
-  global-config:
-    banner: false
-    db-config:
-      # 主键由数据库 bigserial 生成
-      id-type: auto
-
 springdoc:
   api-docs:
     path: /v3/api-docs

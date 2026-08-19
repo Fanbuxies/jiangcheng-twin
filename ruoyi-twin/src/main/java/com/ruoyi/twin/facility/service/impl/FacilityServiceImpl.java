@@ -4,8 +4,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.ruoyi.twin.common.exception.BizException;
 import com.ruoyi.twin.common.result.PageResult;
 import com.ruoyi.twin.common.result.ResultCodeEnum;
@@ -56,14 +56,15 @@ public class FacilityServiceImpl implements FacilityService {
 
     @Override
     public PageResult<FacilityPageVO> pageFacilities(FacilityPageQuery query) {
-        Page<FacilityDO> page = new Page<>(query.getCurrent(), query.getSize());
-        IPage<FacilityDO> result = facilityMapper.selectFacilityPage(
-                page, trimToNull(query.getKeyword()), normalizeType(query.getFacilityType()),
+        PageHelper.startPage(Math.toIntExact(query.getCurrent()), Math.toIntExact(query.getSize()));
+        List<FacilityDO> result = facilityMapper.selectFacilityPage(
+                trimToNull(query.getKeyword()), normalizeType(query.getFacilityType()),
                 normalizeStatus(query.getStatus()));
-        List<FacilityPageVO> records = result.getRecords().stream()
+        PageInfo<FacilityDO> pageInfo = new PageInfo<>(result);
+        List<FacilityPageVO> records = result.stream()
                 .map(FacilityServiceImpl::toPageVo)
                 .collect(Collectors.toList());
-        return PageResult.of(records, result.getTotal(), result.getCurrent(), result.getSize());
+        return PageResult.of(records, pageInfo.getTotal(), pageInfo.getPageNum(), pageInfo.getPageSize());
     }
 
     private static FacilityVO toVo(FacilityDO facility) {

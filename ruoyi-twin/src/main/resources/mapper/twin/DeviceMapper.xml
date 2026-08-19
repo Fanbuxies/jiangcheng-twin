@@ -17,6 +17,24 @@
         <result column="lat" property="lat"/>
     </resultMap>
 
+    <select id="selectById" resultMap="deviceMap">
+        SELECT
+            d.id,
+            d.device_code,
+            d.device_name,
+            d.device_type,
+            d.building_id,
+            d.floor,
+            d.altitude,
+            d.status,
+            d.install_time,
+            d.created_at,
+            ST_X(d.location) AS lon,
+            ST_Y(d.location) AS lat
+        FROM t_device AS d
+        WHERE d.id = #{id}
+    </select>
+
     <select id="selectDeviceList" resultMap="deviceMap">
         SELECT
             d.id,
@@ -52,7 +70,7 @@
         ORDER BY d.id
     </select>
 
-    <!-- 分页由 MyBatis-Plus 拦截器生成 count 与 limit；count 为 0 时拦截器直接返回空列表不再执行本语句 -->
+    <!-- 分页由 PageHelper 生成 count 与 limit -->
     <select id="selectDevicePage" resultMap="deviceMap">
         SELECT
             d.id,
@@ -84,6 +102,21 @@
         ORDER BY d.id
     </select>
 
+    <select id="countByBuildingId" resultType="java.lang.Long">
+        SELECT count(*)
+        FROM t_device AS d
+        WHERE d.building_id = #{buildingId}
+    </select>
+
+    <select id="countByDeviceCode" resultType="java.lang.Long">
+        SELECT count(*)
+        FROM t_device AS d
+        WHERE d.device_code = #{deviceCode}
+        <if test="excludeId != null">
+            AND d.id != #{excludeId}
+        </if>
+    </select>
+
     <!-- location 几何由 PostGIS 按点位经纬度构造；install_time 缺省取当前时间 -->
     <insert id="insertDevice" useGeneratedKeys="true" keyProperty="device.id">
         INSERT INTO t_device (device_code, device_name, device_type, building_id, floor,
@@ -112,5 +145,10 @@
             location = ST_SetSRID(ST_MakePoint(#{device.lon}, #{device.lat}), 4326)
         WHERE id = #{device.id}
     </update>
+
+    <delete id="deleteById">
+        DELETE FROM t_device
+        WHERE id = #{id}
+    </delete>
 
 </mapper>

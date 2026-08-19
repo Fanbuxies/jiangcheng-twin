@@ -20,7 +20,7 @@ public class BuildingPageQuery {
     /** 每页条数下限 */
     private static final long MIN_SIZE = 1L;
 
-    /** 每页条数上限，与 MybatisPlusConfig 分页拦截器上限一致 */
+    /** 每页条数上限，由入参校验统一限制 */
     private static final long MAX_SIZE = 500L;
 
     /** 默认页码 */

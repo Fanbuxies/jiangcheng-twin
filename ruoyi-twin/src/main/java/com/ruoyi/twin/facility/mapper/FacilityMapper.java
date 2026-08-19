@@ -2,9 +2,6 @@ package com.ruoyi.twin.facility.mapper;
 
 import java.util.List;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ruoyi.twin.facility.entity.FacilityDO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -15,7 +12,7 @@ import org.apache.ibatis.annotations.Param;
  * @author lvfan
  */
 @Mapper
-public interface FacilityMapper extends BaseMapper<FacilityDO> {
+public interface FacilityMapper {
 
     /**
      * 按类型与视口范围查设施列表，附带点位经纬度
@@ -43,14 +40,12 @@ public interface FacilityMapper extends BaseMapper<FacilityDO> {
     /**
      * 设施分页，关键字按名称或编号模糊匹配，类型与状态筛选均选填
      *
-     * @param page         分页参数，count 为 0 时拦截器直接返回空列表
      * @param keyword      关键字，为 null 表示不限
      * @param facilityType 设施类型，为 null 表示不限
      * @param status       运行状态，为 null 表示不限
      * @return 分页结果，记录含点位经纬度
      */
-    IPage<FacilityDO> selectFacilityPage(Page<FacilityDO> page,
-                                         @Param("keyword") String keyword,
-                                         @Param("facilityType") String facilityType,
-                                         @Param("status") String status);
+    List<FacilityDO> selectFacilityPage(@Param("keyword") String keyword,
+                                        @Param("facilityType") String facilityType,
+                                        @Param("status") String status);
 }

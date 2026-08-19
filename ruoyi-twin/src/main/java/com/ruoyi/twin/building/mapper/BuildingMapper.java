@@ -1,7 +1,7 @@
 package com.ruoyi.twin.building.mapper;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
+import java.util.List;
+
 import com.ruoyi.twin.building.entity.BuildingDO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -14,7 +14,15 @@ import org.apache.ibatis.annotations.Param;
  * @author lvfan
  */
 @Mapper
-public interface BuildingMapper extends BaseMapper<BuildingDO> {
+public interface BuildingMapper {
+
+    /**
+     * 按主键查询建筑，附带中心点经纬度
+     *
+     * @param id 主键
+     * @return 查无返回 null
+     */
+    BuildingDO selectById(@Param("id") Long id);
 
     /**
      * 按主键查详情，附带轮廓 GeoJSON 与中心点经纬度
@@ -66,14 +74,12 @@ public interface BuildingMapper extends BaseMapper<BuildingDO> {
      * 建筑分页查询，附带中心点经纬度。keyword 为 null 表示不限，
      * buildingType 为 null 表示不限，由 service 层统一去空
      *
-     * @param page         分页对象，由分页拦截器处理 count 与 limit
      * @param keyword      关键字，按名称模糊匹配
      * @param buildingType 建筑类型
      * @return 当页建筑，仅填充列表所需字段
      */
-    IPage<BuildingDO> selectBuildingPage(IPage<BuildingDO> page,
-                                         @Param("keyword") String keyword,
-                                         @Param("buildingType") String buildingType);
+    List<BuildingDO> selectBuildingPage(@Param("keyword") String keyword,
+                                        @Param("buildingType") String buildingType);
 
     /**
      * 新增建筑，footprint 与 center 在 SQL 侧按中心点构造
@@ -95,4 +101,12 @@ public interface BuildingMapper extends BaseMapper<BuildingDO> {
      */
     int updateBuilding(@Param("building") BuildingDO building,
                        @Param("halfExtent") double halfExtent);
+
+    /**
+     * 按主键删除建筑
+     *
+     * @param id 主键
+     * @return 影响行数
+     */
+    int deleteById(@Param("id") Long id);
 }

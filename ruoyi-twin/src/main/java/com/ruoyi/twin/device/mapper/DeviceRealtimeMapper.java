@@ -2,7 +2,6 @@ package com.ruoyi.twin.device.mapper;
 
 import java.util.List;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.ruoyi.twin.device.dto.DeviceMetricsDTO;
 import com.ruoyi.twin.device.entity.DeviceRealtimeDO;
 import org.apache.ibatis.annotations.Mapper;
@@ -14,7 +13,7 @@ import org.apache.ibatis.annotations.Param;
  * @author lvfan
  */
 @Mapper
-public interface DeviceRealtimeMapper extends BaseMapper<DeviceRealtimeDO> {
+public interface DeviceRealtimeMapper {
 
     /**
      * 批量写入实时状态，已存在的监测对象覆盖指标与告警级别

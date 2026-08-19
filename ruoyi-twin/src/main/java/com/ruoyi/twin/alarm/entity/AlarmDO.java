@@ -3,10 +3,6 @@ package com.ruoyi.twin.alarm.entity;
 import java.io.Serializable;
 import java.time.OffsetDateTime;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 /**
@@ -17,7 +13,6 @@ import lombok.Data;
  * @author lvfan
  */
 @Data
-@TableName("t_alarm")
 public class AlarmDO implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -25,7 +20,6 @@ public class AlarmDO implements Serializable {
     /**
      * 主键
      */
-    @TableId(type = IdType.AUTO)
     private Long id;
 
     /**
@@ -46,7 +40,6 @@ public class AlarmDO implements Serializable {
     /**
      * 触发时的指标快照 JSON 文本
      */
-    @TableField("alarm_value")
     private String alarmValueJson;
 
     /**

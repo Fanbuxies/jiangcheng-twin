@@ -4,11 +4,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.ruoyi.twin.alarm.mapper.AlarmMapper;
-import com.ruoyi.twin.building.entity.BuildingDO;
 import com.ruoyi.twin.building.mapper.BuildingMapper;
 import com.ruoyi.twin.common.enums.ObjectTypeEnum;
 import com.ruoyi.twin.common.exception.BizException;
@@ -68,14 +66,15 @@ public class DeviceServiceImpl implements DeviceService {
 
     @Override
     public PageResult<DevicePageVO> pageDevices(DevicePageQuery query) {
-        Page<DeviceDO> page = new Page<>(query.getCurrent(), query.getSize());
-        IPage<DeviceDO> result = deviceMapper.selectDevicePage(
-                page, trimToNull(query.getKeyword()), normalizeType(query.getDeviceType()),
+        PageHelper.startPage(Math.toIntExact(query.getCurrent()), Math.toIntExact(query.getSize()));
+        List<DeviceDO> result = deviceMapper.selectDevicePage(
+                trimToNull(query.getKeyword()), normalizeType(query.getDeviceType()),
                 normalizeStatus(query.getStatus()), query.getBuildingId());
-        List<DevicePageVO> records = result.getRecords().stream()
+        PageInfo<DeviceDO> pageInfo = new PageInfo<>(result);
+        List<DevicePageVO> records = result.stream()
                 .map(DeviceServiceImpl::toPageVo)
                 .collect(Collectors.toList());
-        return PageResult.of(records, result.getTotal(), result.getCurrent(), result.getSize());
+        return PageResult.of(records, pageInfo.getTotal(), pageInfo.getPageNum(), pageInfo.getPageSize());
     }
 
     private static DeviceVO toVo(DeviceDO device) {
@@ -163,9 +162,7 @@ public class DeviceServiceImpl implements DeviceService {
      * 设备编号唯一性预查，excludeId 非空时排除自身（编辑场景）
      */
     private void checkDeviceCodeUnique(String deviceCode, Long excludeId) {
-        Long count = deviceMapper.selectCount(Wrappers.<DeviceDO>lambdaQuery()
-                .eq(DeviceDO::getDeviceCode, deviceCode)
-                .ne(excludeId != null, DeviceDO::getId, excludeId));
+        Long count = deviceMapper.countByDeviceCode(deviceCode, excludeId);
         if (count != null && count > 0) {
             throw new BizException("设备编号已存在：" + deviceCode);
         }

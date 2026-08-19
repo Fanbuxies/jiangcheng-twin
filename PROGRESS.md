@@ -1,6 +1,6 @@
 # 数字孪生合并进度
 
-更新时间：2026-08-20 02:20（Asia/Shanghai）
+更新时间：2026-08-20 02:27（Asia/Shanghai）
 
 ## 阶段 1：搬迁源码，编译通过
 
@@ -70,6 +70,20 @@
   - 源码与资源搜索 `com.wuhan`：0 结果；方案与进度文档保留历史说明
   - 91 端口启动出现 `Started RuoYiApplication`，Druid 正常初始化，无 MyBatis 映射解析错误，`/login` 返回 200
   - 宿主回归：系统管理 7 页、系统监控 4 页及代码生成列表均正常加载；用户条件查询返回 admin 单条；参数页第 2 页为第 11/11 条，操作日志第 2 页为第 11–16/16 条
+
+## 阶段 4：异常处理隔离
+
+- 状态：已完成，待本阶段提交
+- 生产代码：阶段 1 解决 Bean 冲突时已提前完成，本阶段未再改生产逻辑
+  - Bean 名：`twinGlobalExceptionHandler`
+  - 优先级：`@Order(1)`
+  - 包范围：building / device / facility / alarm / stat
+  - `com.ruoyi.twin.web` 明确不在 twin advice 范围内
+- 验证探针：`ruoyi-twin/src/test/java/com/ruoyi/twin/gate/ExceptionIsolationGate.java`
+  - 结果：`EXCEPTION_ISOLATION_PASS twinCode=405 hostCode=500 packages=5 order=1`
+  - 运行时触发 `GET /api/building/0`，日志确认由 twin `handleConstraintViolationException` 处理
+  - 完整构建通过；宿主 12 个回归页面再次正常加载，参数与操作日志第二页结果保持正确
+  - 管理页 Controller 尚未进入阶段 5，实际管理接口的 `AjaxResult` HTTP 响应留待阶段 5 联调
 
 ## 验证清单总览
 

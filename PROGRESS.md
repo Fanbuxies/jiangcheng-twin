@@ -1,6 +1,6 @@
 # 数字孪生合并进度
 
-更新时间：2026-08-20 13:16（Asia/Shanghai）
+更新时间：2026-08-20 14:16（Asia/Shanghai）
 
 ## 阶段 1：搬迁源码，编译通过
 
@@ -89,7 +89,8 @@
 
 ## 阶段 5：若依管理页
 
-- 状态：已完成，待本阶段提交
+- 状态：已提交
+- 提交：`041b9cea feat: 新增数字孪生管理页`
 - 新增管理入口：
   - `BuildingManageController`：建筑列表、新增、编辑、删除
   - `DeviceManageController`：设备列表、新增、编辑、删除
@@ -106,6 +107,19 @@
   - Gate 覆盖 Controller 继承关系、路由、权限、写操作日志、返回类型、模板、禁止 Mapper 注入、分页 total 回归与建筑表单字段
   - `mvn clean package -DskipTests`：8 个 Reactor 模块全部 `SUCCESS`，`BUILD SUCCESS`
 
+## 阶段 6：三维场景嵌入
+
+- 状态：已完成，待本阶段提交
+- 前端按 `npm run build -- --base=/twin/` 构建，类型检查与 Vite 构建通过
+- `assets` 与 `cesium` 产物进入 `static/twin/`，共 13,188,536 字节
+- `tiles` 未进入静态资源和 Git，111 个文件、65,727,963 字节落在 `D:/ruoyi/twinTiles/`
+- `ResourcesConfig` 新增 `/twin/tiles/**` 磁盘映射，继续受 Shiro `/** = user` 规则保护，未增加 anon
+- 新增 `/twin/index` 场景入口及 `templates/twin/index.html` 壳页
+- 删除 twin 跨域配置；同源接口继续使用 `/api` 与 `/ws/realtime`
+- SPA 已识别登录页 HTML 与 401/403，提示会话失效并跳出 iframe 到 `/login`
+- `SceneEmbeddingGate`：`SCENE_EMBEDDING_PASS`
+- `mvn clean package -DskipTests`：8 个 Reactor 模块全部 `SUCCESS`，`BUILD SUCCESS`
+
 ## 验证清单总览
 
 1. 系统管理回归：通过（用户/角色/菜单/部门/岗位/字典/参数列表；用户条件查询；参数翻页）
@@ -115,7 +129,7 @@
 5. 构建与包名/依赖清零：通过（代码与资源清零；文档保留历史文本）
 6. 应用启动与映射解析：通过
 7. 数字孪生菜单：未实现
-8. Cesium 场景：未实现
+8. Cesium 场景：嵌入、资源映射与构建契约通过，运行时白模和点选留待最终验证
 9. 三个管理页 CRUD：代码与静态契约通过，数据库 CRUD 联调留待最终验证
 10. 操作日志：三个管理页写操作均已加 `@Log`，落库结果留待最终验证
 11. 模拟器与 WebSocket：未验证

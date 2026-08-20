@@ -44,3 +44,11 @@ nbdist/
 !*/build/*.java
 !*/build/*.html
 !*/build/*.xml
+
+######################################################################
+# Digital Twin
+
+ruoyi-admin/src/main/resources/static/twin/tiles/
+data-prep/output/
+data-prep/logs/
+__pycache__/

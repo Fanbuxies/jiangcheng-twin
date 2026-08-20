@@ -25,6 +25,12 @@ public class ResourcesConfig implements WebMvcConfigurer
     @Value("${shiro.user.indexUrl}")
     private String indexUrl;
 
+    /**
+     * 数字孪生切片磁盘目录
+     */
+    @Value("${app.tileset.location:D:/ruoyi/twinTiles/}")
+    private String twinTilesLocation;
+
     @Autowired
     private RepeatSubmitInterceptor repeatSubmitInterceptor;
 
@@ -42,6 +48,9 @@ public class ResourcesConfig implements WebMvcConfigurer
     {
         /** 本地文件上传路径 */
         registry.addResourceHandler(Constants.RESOURCE_PREFIX + "/**").addResourceLocations("file:" + RuoYiConfig.getProfile() + "/");
+
+        /** 数字孪生三维切片 */
+        registry.addResourceHandler("/twin/tiles/**").addResourceLocations("file:" + twinTilesLocation);
 
         /** swagger配置 */
         registry.addResourceHandler("/swagger-ui/**").addResourceLocations("classpath:/META-INF/resources/webjars/springfox-swagger-ui/");

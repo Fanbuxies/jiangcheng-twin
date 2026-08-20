@@ -35,6 +35,7 @@ server:
 logging:
   level:
     com.ruoyi: debug
+    com.ruoyi.twin.simulator: warn
     org.springframework: warn
 
 # 用户配置
@@ -149,9 +150,11 @@ xss:
 # 数字孪生配置
 app:
   tileset:
-    # 相对路径，由前端 Vite 从 public/tiles/ 同源静态托管；
+    # 相对路径，由若依从磁盘目录同源静态托管；
     # 留空则 tileset-info 返回 null，前端走 GeoJSON 降级
-    url: /tiles/tileset.json
+    url: /twin/tiles/tileset.json
+    # 三维切片体积较大，不打进 jar；目录末尾必须保留斜杠
+    location: D:/ruoyi/twinTiles/
     # 相机位置是视点而非注视点，视线沿 pitch 方向落在其正北某处。
     # 【重要】不要用平面几何 h/tan(|pitch|) 推算落点——22 km 以上高度地球曲率显著，
     # 实测落点只有平面几何预测的 0.61 倍（视点 lat 30.3472 / h 22000 / pitch -45

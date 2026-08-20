@@ -1,6 +1,6 @@
 # 数字孪生合并进度
 
-更新时间：2026-08-20 15:24（Asia/Shanghai）
+更新时间：2026-08-20 15:26（Asia/Shanghai）
 
 ## 阶段 1：搬迁源码，编译通过
 
@@ -123,7 +123,8 @@
 
 ## 阶段 7：菜单与收尾
 
-- 状态：已完成，待本阶段提交
+- 状态：已提交
+- 提交：`b921ac02 feat: 完成数字孪生菜单与联调收尾`
 - 菜单：`sql/twin/menu.sql` 已写入并执行，`sys_menu` 的 2000–2004 共 5 行存在，菜单序列已推进到 2004
 - 日志：`com.ruoyi.twin: info` 与 `com.ruoyi.twin.simulator: warn` 生效，模拟器运行时不再输出 twin Mapper SQL
 - 模拟器：`app.simulator.enabled: true`，默认启动后实时表按 3 秒周期刷新

@@ -1,6 +1,6 @@
 # 数字孪生合并进度
 
-更新时间：2026-08-20 14:16（Asia/Shanghai）
+更新时间：2026-08-20 15:24（Asia/Shanghai）
 
 ## 阶段 1：搬迁源码，编译通过
 
@@ -109,7 +109,8 @@
 
 ## 阶段 6：三维场景嵌入
 
-- 状态：已完成，待本阶段提交
+- 状态：已提交
+- 提交：`2c6e75f7 feat: 嵌入数字孪生三维场景`
 - 前端按 `npm run build -- --base=/twin/` 构建，类型检查与 Vite 构建通过
 - `assets` 与 `cesium` 产物进入 `static/twin/`，共 13,188,536 字节
 - `tiles` 未进入静态资源和 Git，111 个文件、65,727,963 字节落在 `D:/ruoyi/twinTiles/`
@@ -120,25 +121,34 @@
 - `SceneEmbeddingGate`：`SCENE_EMBEDDING_PASS`
 - `mvn clean package -DskipTests`：8 个 Reactor 模块全部 `SUCCESS`，`BUILD SUCCESS`
 
+## 阶段 7：菜单与收尾
+
+- 状态：已完成，待本阶段提交
+- 菜单：`sql/twin/menu.sql` 已写入并执行，`sys_menu` 的 2000–2004 共 5 行存在，菜单序列已推进到 2004
+- 日志：`com.ruoyi.twin: info` 与 `com.ruoyi.twin.simulator: warn` 生效，模拟器运行时不再输出 twin Mapper SQL
+- 模拟器：`app.simulator.enabled: true`，默认启动后实时表按 3 秒周期刷新
+- 会话失效：Axios 通过最终响应 URL 识别 Shiro 跳转到 `/login`，提示会话失效并跳出 SPA；前端重新按 `--base=/twin/` 构建
+- 临时验证数据：建筑、设备、告警、代码生成候选表均已通过 Controller 清理，数据库复核为 0
+
 ## 验证清单总览
 
-1. 系统管理回归：通过（用户/角色/菜单/部门/岗位/字典/参数列表；用户条件查询；参数翻页）
-2. 系统监控回归：通过（在线用户/定时任务/登录日志/操作日志列表；操作日志翻页）
-3. 系统工具代码生成回归：部分通过（列表加载正常；表导入与预览留待有安全候选表时验证）
-4. 宿主分页总数和翻页：通过（参数 11 条、操作日志 16 条，第二页条数与区间正确）
-5. 构建与包名/依赖清零：通过（代码与资源清零；文档保留历史文本）
-6. 应用启动与映射解析：通过
-7. 数字孪生菜单：未实现
-8. Cesium 场景：嵌入、资源映射与构建契约通过，运行时白模和点选留待最终验证
-9. 三个管理页 CRUD：代码与静态契约通过，数据库 CRUD 联调留待最终验证
-10. 操作日志：三个管理页写操作均已加 `@Log`，落库结果留待最终验证
-11. 模拟器与 WebSocket：未验证
-12. 未登录和会话过期：未验证
-13. 日志增长速率：未验证
+1. 系统管理回归：通过（用户/角色/菜单/部门/岗位/字典/参数均返回 200；用户条件查询为 admin 单条；参数第 2 页 total=11、rows=1）
+2. 系统监控回归：通过（在线用户、定时任务、登录日志、操作日志均返回 200；操作日志第 2 页 total=29、rows=10）
+3. 系统工具代码生成回归：通过（安全表 `sys_config` 导入成功，预览生成 10 个文件，随后通过 Controller 删除且主表/列明细均为 0）
+4. 宿主分页总数和翻页：通过（参数与操作日志的 total、第二页条数正确；用户条件查询 total=1）
+5. 构建与包名/依赖清零：通过（完整 Maven 构建通过；代码与资源中的 `com.baomidou`、`com.wuhan` 均清零，文档保留历史文本）
+6. 应用启动与映射解析：通过（出现 `Started RuoYiApplication`，Druid 初始化正常，无 MyBatis 映射解析错误）
+7. 数字孪生菜单：通过（左侧目录及三维底座、建筑管理、设备管理、告警记录四个子菜单可见可打开）
+8. Cesium 场景：通过（Cesium、哈希资源、`/twin/tiles/tileset.json` 与 glb 均为 200；29,818 栋白模可见；场景点击建筑再次请求详情并弹出属性面板）
+9. 三个管理页 CRUD：通过（列表分页、条件查询、新增/编辑/删除均成功；新增建筑 footprint `ST_IsValid=true`、非空，中心点及多边形由 PostGIS 正确构造）
+10. 操作日志：通过（建筑、设备、告警各自 INSERT/UPDATE/DELETE 共 9 条，admin，status=0）
+11. 模拟器与 WebSocket：通过（默认开关已打开；实时表时间戳按 3 秒推进；`/ws/realtime` 握手为 OPEN；概率 1.0 验证产生 PENDING 告警后已清理临时设备）
+12. 未登录和会话过期：通过（匿名访问 `/twin/index` 跳 `/login`；登录后清除会话再触发 SPA 请求，800ms 内顶层跳 `/login`，提示文案为“登录状态已失效，请重新登录”）
+13. 日志增长速率：通过（模拟器运行观察窗口内无 `com.ruoyi.twin.*Mapper` DEBUG 输出，未刷屏）
 
 ## 约束检查
 
-- `ruoyi-framework`：未修改
+- `ruoyi-framework`：仅按阶段 6 方案修改 `ResourcesConfig`，新增 `/twin/tiles/**` 磁盘映射
 - `ruoyi-common`：未修改
 - `ruoyi-system`：未修改
 - 未 push

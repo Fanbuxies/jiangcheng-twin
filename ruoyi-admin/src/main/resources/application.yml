@@ -35,6 +35,7 @@ server:
 logging:
   level:
     com.ruoyi: debug
+    com.ruoyi.twin: info
     com.ruoyi.twin.simulator: warn
     org.springframework: warn
 
@@ -179,7 +180,7 @@ app:
     geojson-max-features: 12000
   simulator:
     # 关闭后不注册调度线程，实时表停止刷新但接口仍可读历史值
-    enabled: false
+    enabled: true
     # 调度周期，单位毫秒，与 docs 约定的 3 秒推送节奏一致
     fixed-rate: 3000
     # 单设备单次调度的告警概率，约 650 台在线设备约每分钟 26 条

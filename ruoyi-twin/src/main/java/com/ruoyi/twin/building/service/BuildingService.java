@@ -1,5 +1,7 @@
 package com.ruoyi.twin.building.service;
 
+import java.util.List;
+
 import tools.jackson.databind.JsonNode;
 import com.ruoyi.twin.building.dto.BuildingPageQuery;
 import com.ruoyi.twin.building.dto.BuildingSaveDTO;
@@ -47,6 +49,14 @@ public interface BuildingService {
      * @return 当页建筑，含中心点经纬度
      */
     PageResult<BuildingPageVO> pageBuildings(BuildingPageQuery query);
+
+    /**
+     * 查询建筑列表，由若依管理页在 Controller 层启动 PageHelper 分页
+     *
+     * @param query 筛选参数
+     * @return 建筑列表
+     */
+    List<BuildingPageVO> listBuildings(BuildingPageQuery query);
 
     /**
      * 新增建筑，footprint 取中心点向四周扩张的近似矩形

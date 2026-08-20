@@ -12,6 +12,7 @@ import com.ruoyi.twin.common.enums.ObjectTypeEnum;
 import com.ruoyi.twin.common.exception.BizException;
 import com.ruoyi.twin.common.result.PageResult;
 import com.ruoyi.twin.common.result.ResultCodeEnum;
+import com.ruoyi.twin.common.util.PageMappingUtils;
 import com.ruoyi.twin.device.dto.DevicePageQuery;
 import com.ruoyi.twin.device.dto.DeviceSaveDTO;
 import com.ruoyi.twin.device.entity.DeviceDO;
@@ -75,6 +76,23 @@ public class DeviceServiceImpl implements DeviceService {
                 .map(DeviceServiceImpl::toPageVo)
                 .collect(Collectors.toList());
         return PageResult.of(records, pageInfo.getTotal(), pageInfo.getPageNum(), pageInfo.getPageSize());
+    }
+
+    @Override
+    public List<DevicePageVO> listDevices(DevicePageQuery query) {
+        List<DeviceDO> result = deviceMapper.selectDevicePage(
+                trimToNull(query.getKeyword()), normalizeType(query.getDeviceType()),
+                normalizeStatus(query.getStatus()), query.getBuildingId());
+        return PageMappingUtils.map(result, DeviceServiceImpl::toPageVo);
+    }
+
+    @Override
+    public DeviceVO getDevice(Long id) {
+        DeviceDO device = deviceMapper.selectById(id);
+        if (device == null) {
+            throw new BizException(ResultCodeEnum.NOT_FOUND, "设备不存在：" + id);
+        }
+        return toVo(device);
     }
 
     private static DeviceVO toVo(DeviceDO device) {

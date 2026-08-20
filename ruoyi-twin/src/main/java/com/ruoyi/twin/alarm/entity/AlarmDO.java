@@ -28,6 +28,11 @@ public class AlarmDO implements Serializable {
     private Long deviceId;
 
     /**
+     * 监测对象类型：DEVICE / FACILITY
+     */
+    private String objectType;
+
+    /**
      * 告警类型：SMOKE_ALARM / WATER_LEAK / TEMP_HIGH / CURRENT_HIGH / STREAM_LOST
      */
     private String alarmType;
@@ -56,4 +61,9 @@ public class AlarmDO implements Serializable {
      * 关闭时间
      */
     private OffsetDateTime closeTime;
+
+    /**
+     * 入库时间
+     */
+    private OffsetDateTime createdAt;
 }

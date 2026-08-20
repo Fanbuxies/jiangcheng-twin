@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('设备列表')" />
+</head>
+<body class="gray-bg">
+    <div class="container-div">
+        <div class="row">
+            <div class="col-sm-12 search-collapse">
+                <form id="device-form">
+                    <div class="select-list">
+                        <ul>
+                            <li>名称或编号：<input type="text" name="keyword"/></li>
+                            <li>所属建筑：<input type="number" name="buildingId" min="1"/></li>
+                            <li>设备类型：
+                                <select name="deviceType">
+                                    <option value="">所有</option>
+                                    <option value="SMOKE">烟感</option>
+                                    <option value="WATER">水浸</option>
+                                    <option value="TEMP_HUMI">温湿度</option>
+                                    <option value="ELECTRIC">电气</option>
+                                    <option value="CAMERA">摄像头</option>
+                                </select>
+                            </li>
+                            <li>状态：
+                                <select name="status">
+                                    <option value="">所有</option>
+                                    <option value="ONLINE">在线</option>
+                                    <option value="OFFLINE">离线</option>
+                                    <option value="FAULT">故障</option>
+                                </select>
+                            </li>
+                            <li>
+                                <a class="btn btn-primary btn-rounded btn-sm" onclick="$.table.search()"><i class="fa fa-search"></i>&nbsp;搜索</a>
+                                <a class="btn btn-warning btn-rounded btn-sm" onclick="$.form.reset()"><i class="fa fa-refresh"></i>&nbsp;重置</a>
+                            </li>
+                        </ul>
+                    </div>
+                </form>
+            </div>
+
+            <div class="btn-group-sm" id="toolbar" role="group">
+                <a class="btn btn-success" onclick="$.operate.add()" shiro:hasPermission="twin:device:add"><i class="fa fa-plus"></i> 新增</a>
+                <a class="btn btn-primary single disabled" onclick="$.operate.edit()" shiro:hasPermission="twin:device:edit"><i class="fa fa-edit"></i> 修改</a>
+            </div>
+            <div class="col-sm-12 select-table table-striped"><table id="bootstrap-table"></table></div>
+        </div>
+    </div>
+    <th:block th:include="include :: footer" />
+    <script th:inline="javascript">
+        var editFlag = [[${@permission.hasPermi('twin:device:edit')}]];
+        var removeFlag = [[${@permission.hasPermi('twin:device:remove')}]];
+        var prefix = ctx + "twin/device";
+
+        $(function() {
+            var options = {
+                url: prefix + "/list",
+                createUrl: prefix + "/add",
+                updateUrl: prefix + "/edit/{id}",
+                removeUrl: prefix + "/remove",
+                modalName: "设备",
+                uniqueId: "id",
+                escape: true,
+                columns: [{checkbox: true},
+                {field: 'id', title: '编号'},
+                {field: 'deviceCode', title: '设备编号'},
+                {field: 'deviceName', title: '设备名称'},
+                {field: 'deviceTypeLabel', title: '设备类型'},
+                {field: 'buildingId', title: '所属建筑'},
+                {field: 'floor', title: '楼层'},
+                {field: 'status', title: '状态'},
+                {field: 'lon', title: '经度'},
+                {field: 'lat', title: '纬度'},
+                {
+                    title: '操作',
+                    align: 'center',
+                    escape: false,
+                    formatter: function(value, row, index) {
+                        var actions = [];
+                        actions.push('<a class="btn btn-success btn-xs ' + editFlag + '" href="javascript:void(0)" onclick="$.operate.edit(\'' + row.id + '\')"><i class="fa fa-edit"></i>编辑</a> ');
+                        actions.push('<a class="btn btn-danger btn-xs ' + removeFlag + '" href="javascript:void(0)" onclick="$.operate.remove(\'' + row.id + '\')"><i class="fa fa-remove"></i>删除</a>');
+                        return actions.join('');
+                    }
+                }]
+            };
+            $.table.init(options);
+        });
+    </script>
+</body>
+</html>

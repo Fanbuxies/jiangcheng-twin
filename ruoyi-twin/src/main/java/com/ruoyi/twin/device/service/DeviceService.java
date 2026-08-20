@@ -35,6 +35,22 @@ public interface DeviceService {
     PageResult<DevicePageVO> pageDevices(DevicePageQuery query);
 
     /**
+     * 查询设备列表，由若依管理页在 Controller 层启动 PageHelper 分页
+     *
+     * @param query 筛选参数
+     * @return 设备列表
+     */
+    List<DevicePageVO> listDevices(DevicePageQuery query);
+
+    /**
+     * 按主键查询设备
+     *
+     * @param id 主键
+     * @return 设备详情
+     */
+    DeviceVO getDevice(Long id);
+
+    /**
      * 新增设备，location 按点位经纬度在 SQL 侧构造
      *
      * @param dto 设备入参

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head><th:block th:include="include :: header('告警列表')" /></head>
+<body class="gray-bg">
+    <div class="container-div">
+        <div class="row">
+            <div class="col-sm-12 search-collapse">
+                <form id="alarm-form">
+                    <div class="select-list"><ul>
+                        <li>对象编号：<input type="number" name="deviceId" min="1"/></li>
+                        <li>对象类型：<select name="objectType"><option value="">所有</option><option value="DEVICE">设备</option><option value="FACILITY">设施</option></select></li>
+                        <li>告警类型：<input type="text" name="alarmType"/></li>
+                        <li>级别：<select name="alarmLevel"><option value="">所有</option><option value="0">正常</option><option value="1">预警</option><option value="2">报警</option></select></li>
+                        <li>状态：<select name="status"><option value="">所有</option><option value="PENDING">待处理</option><option value="CONFIRMED">已确认</option><option value="CLOSED">已关闭</option></select></li>
+                        <li><a class="btn btn-primary btn-rounded btn-sm" onclick="$.table.search()"><i class="fa fa-search"></i>&nbsp;搜索</a> <a class="btn btn-warning btn-rounded btn-sm" onclick="$.form.reset()"><i class="fa fa-refresh"></i>&nbsp;重置</a></li>
+                    </ul></div>
+                </form>
+            </div>
+            <div class="btn-group-sm" id="toolbar" role="group">
+                <a class="btn btn-success" onclick="$.operate.add()" shiro:hasPermission="twin:alarm:add"><i class="fa fa-plus"></i> 新增</a>
+                <a class="btn btn-primary single disabled" onclick="$.operate.edit()" shiro:hasPermission="twin:alarm:edit"><i class="fa fa-edit"></i> 修改</a>
+            </div>
+            <div class="col-sm-12 select-table table-striped"><table id="bootstrap-table"></table></div>
+        </div>
+    </div>
+    <th:block th:include="include :: footer" />
+    <script th:inline="javascript">
+        var editFlag = [[${@permission.hasPermi('twin:alarm:edit')}]];
+        var removeFlag = [[${@permission.hasPermi('twin:alarm:remove')}]];
+        var prefix = ctx + "twin/alarm";
+        $(function() {
+            var options = {
+                url: prefix + "/list",
+                createUrl: prefix + "/add",
+                updateUrl: prefix + "/edit/{id}",
+                removeUrl: prefix + "/remove",
+                modalName: "告警",
+                uniqueId: "id",
+                escape: true,
+                columns: [{checkbox: true},
+                {field: 'id', title: '编号'},
+                {field: 'deviceId', title: '对象编号'},
+                {field: 'objectType', title: '对象类型'},
+                {field: 'alarmType', title: '告警类型'},
+                {field: 'alarmLevel', title: '级别'},
+                {field: 'alarmValueJson', title: '指标'},
+                {field: 'status', title: '状态'},
+                {field: 'occurTime', title: '发生时间'},
+                {field: 'closeTime', title: '关闭时间'},
+                {
+                    title: '操作',
+                    align: 'center',
+                    escape: false,
+                    formatter: function(value, row, index) {
+                        var actions = [];
+                        actions.push('<a class="btn btn-success btn-xs ' + editFlag + '" href="javascript:void(0)" onclick="$.operate.edit(\'' + row.id + '\')"><i class="fa fa-edit"></i>编辑</a> ');
+                        actions.push('<a class="btn btn-danger btn-xs ' + removeFlag + '" href="javascript:void(0)" onclick="$.operate.remove(\'' + row.id + '\')"><i class="fa fa-remove"></i>删除</a>');
+                        return actions.join('');
+                    }
+                }]
+            };
+            $.table.init(options);
+        });
+    </script>
+</body>
+</html>

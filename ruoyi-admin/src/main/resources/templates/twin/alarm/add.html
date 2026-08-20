@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+<head><th:block th:include="include :: header('新增告警')" /></head>
+<body class="white-bg">
+    <div class="wrapper wrapper-content animated fadeInRight ibox-content">
+        <form class="form-horizontal m" id="form-alarm-add">
+            <div class="form-group"><label class="col-sm-3 control-label is-required">对象编号：</label><div class="col-sm-8"><input class="form-control" type="number" name="deviceId" min="1" required></div></div>
+            <div class="form-group"><label class="col-sm-3 control-label is-required">对象类型：</label><div class="col-sm-8"><select class="form-control" name="objectType" required><option value="DEVICE">设备</option><option value="FACILITY">设施</option></select></div></div>
+            <div class="form-group">
+                <label class="col-sm-3 control-label is-required">告警类型：</label>
+                <div class="col-sm-8"><select class="form-control" name="alarmType" required><option value="SMOKE_ALARM">烟感报警</option><option value="WATER_LEAK">水浸报警</option><option value="TEMP_HIGH">温度过高预警</option><option value="CURRENT_HIGH">电流过高报警</option><option value="STREAM_LOST">视频断流预警</option><option value="CHARGE_FAULT">充电桩故障</option><option value="LAMP_OFF">路灯不亮</option><option value="MANHOLE_TILT">井盖倾斜</option><option value="BUS_STOP_OFFLINE">站牌离线</option></select></div>
+            </div>
+            <div class="form-group"><label class="col-sm-3 control-label is-required">告警级别：</label><div class="col-sm-8"><select class="form-control" name="alarmLevel" required><option value="0">正常</option><option value="1">预警</option><option value="2">报警</option></select></div></div>
+            <div class="form-group"><label class="col-sm-3 control-label">指标 JSON：</label><div class="col-sm-8"><textarea class="form-control" name="alarmValueJson" maxlength="4000" rows="5"></textarea></div></div>
+            <div class="form-group"><label class="col-sm-3 control-label is-required">状态：</label><div class="col-sm-8"><select class="form-control" name="status" required><option value="PENDING">待处理</option><option value="CONFIRMED">已确认</option><option value="CLOSED">已关闭</option></select></div></div>
+        </form>
+    </div>
+    <th:block th:include="include :: footer" />
+    <script>
+        var prefix = ctx + "twin/alarm";
+        $("#form-alarm-add").validate({focusCleanup: true});
+        function submitHandler() {
+            if ($.validate.form()) {
+                $.operate.save(prefix + "/add", $('#form-alarm-add').serialize());
+            }
+        }
+    </script>
+</body>
+</html>

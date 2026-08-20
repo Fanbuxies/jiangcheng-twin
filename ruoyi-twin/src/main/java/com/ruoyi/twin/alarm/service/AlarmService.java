@@ -4,6 +4,9 @@ import java.util.List;
 import java.util.Set;
 
 import com.ruoyi.twin.alarm.dto.AlarmCreateDTO;
+import com.ruoyi.twin.alarm.dto.AlarmPageQuery;
+import com.ruoyi.twin.alarm.dto.AlarmSaveDTO;
+import com.ruoyi.twin.alarm.vo.AlarmManageVO;
 import com.ruoyi.twin.alarm.vo.AlarmVO;
 import com.ruoyi.twin.common.enums.ObjectTypeEnum;
 
@@ -13,6 +16,45 @@ import com.ruoyi.twin.common.enums.ObjectTypeEnum;
  * @author lvfan
  */
 public interface AlarmService {
+
+    /**
+     * 按条件查询告警列表
+     *
+     * @param query 筛选参数
+     * @return 告警列表
+     */
+    List<AlarmManageVO> listAlarms(AlarmPageQuery query);
+
+    /**
+     * 按主键查询告警
+     *
+     * @param id 主键
+     * @return 告警详情
+     */
+    AlarmManageVO getAlarm(Long id);
+
+    /**
+     * 新增告警
+     *
+     * @param dto 告警入参
+     * @return 新告警主键
+     */
+    Long createAlarm(AlarmSaveDTO dto);
+
+    /**
+     * 更新告警
+     *
+     * @param id  主键
+     * @param dto 告警入参
+     */
+    void updateAlarm(Long id, AlarmSaveDTO dto);
+
+    /**
+     * 删除告警
+     *
+     * @param id 主键
+     */
+    void deleteAlarm(Long id);
 
     /**
      * 批量新增告警，状态固定为 PENDING

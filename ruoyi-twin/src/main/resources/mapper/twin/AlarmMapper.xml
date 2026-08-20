@@ -2,6 +2,68 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.ruoyi.twin.alarm.mapper.AlarmMapper">
 
+    <resultMap id="alarmMap" type="com.ruoyi.twin.alarm.entity.AlarmDO">
+        <id column="id" property="id"/>
+        <result column="device_id" property="deviceId"/>
+        <result column="object_type" property="objectType"/>
+        <result column="alarm_type" property="alarmType"/>
+        <result column="alarm_level" property="alarmLevel"/>
+        <result column="alarm_value_json" property="alarmValueJson"/>
+        <result column="status" property="status"/>
+        <result column="occur_time" property="occurTime"/>
+        <result column="close_time" property="closeTime"/>
+        <result column="created_at" property="createdAt"/>
+    </resultMap>
+
+    <select id="selectAlarmList" resultMap="alarmMap">
+        SELECT
+            a.id,
+            a.device_id,
+            a.object_type,
+            a.alarm_type,
+            a.alarm_level,
+            a.alarm_value::text AS alarm_value_json,
+            a.status,
+            a.occur_time,
+            a.close_time,
+            a.created_at
+        FROM t_alarm AS a
+        <where>
+            <if test="deviceId != null">
+                AND a.device_id = #{deviceId}
+            </if>
+            <if test="objectType != null and objectType != ''">
+                AND a.object_type = #{objectType}
+            </if>
+            <if test="alarmType != null and alarmType != ''">
+                AND a.alarm_type = #{alarmType}
+            </if>
+            <if test="alarmLevel != null">
+                AND a.alarm_level = #{alarmLevel}
+            </if>
+            <if test="status != null and status != ''">
+                AND a.status = #{status}
+            </if>
+        </where>
+        ORDER BY a.occur_time DESC, a.id DESC
+    </select>
+
+    <select id="selectById" resultMap="alarmMap">
+        SELECT
+            a.id,
+            a.device_id,
+            a.object_type,
+            a.alarm_type,
+            a.alarm_level,
+            a.alarm_value::text AS alarm_value_json,
+            a.status,
+            a.occur_time,
+            a.close_time,
+            a.created_at
+        FROM t_alarm AS a
+        WHERE a.id = #{id}
+    </select>
+
     <insert id="batchInsert">
         INSERT INTO t_alarm (device_id, object_type, alarm_type, alarm_level,
                              alarm_value, status, occur_time)
@@ -11,6 +73,34 @@
              #{item.alarmValueJson}::jsonb, 'PENDING', #{item.occurTime})
         </foreach>
     </insert>
+
+    <insert id="insertAlarm" useGeneratedKeys="true" keyProperty="alarm.id">
+        INSERT INTO t_alarm (device_id, object_type, alarm_type, alarm_level,
+                             alarm_value, status, occur_time, close_time)
+        VALUES (#{alarm.deviceId},
+                #{alarm.objectType},
+                #{alarm.alarmType},
+                #{alarm.alarmLevel},
+                CAST(NULLIF(#{alarm.alarmValueJson}, '') AS jsonb),
+                #{alarm.status},
+                now(),
+                CASE WHEN #{alarm.status} = 'CLOSED' THEN now() ELSE NULL END)
+    </insert>
+
+    <update id="updateAlarm">
+        UPDATE t_alarm
+        SET device_id = #{alarm.deviceId},
+            object_type = #{alarm.objectType},
+            alarm_type = #{alarm.alarmType},
+            alarm_level = #{alarm.alarmLevel},
+            alarm_value = CAST(NULLIF(#{alarm.alarmValueJson}, '') AS jsonb),
+            status = #{alarm.status},
+            close_time = CASE
+                WHEN #{alarm.status} = 'CLOSED' THEN coalesce(close_time, now())
+                ELSE NULL
+            END
+        WHERE id = #{alarm.id}
+    </update>
 
     <select id="selectPendingDeviceIds" resultType="java.lang.Long">
         SELECT DISTINCT a.device_id
@@ -24,6 +114,11 @@
         DELETE FROM t_alarm
         WHERE object_type = #{objectType}
           AND device_id = #{deviceId}
+    </delete>
+
+    <delete id="deleteById">
+        DELETE FROM t_alarm
+        WHERE id = #{id}
     </delete>
 
 </mapper>

@@ -23,6 +23,7 @@ import com.ruoyi.twin.common.exception.BizException;
 import com.ruoyi.twin.common.result.PageResult;
 import com.ruoyi.twin.common.result.ResultCodeEnum;
 import com.ruoyi.twin.common.util.BboxUtils;
+import com.ruoyi.twin.common.util.PageMappingUtils;
 import com.ruoyi.twin.device.mapper.DeviceMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -121,6 +122,13 @@ public class BuildingServiceImpl implements BuildingService {
                 .map(BuildingServiceImpl::toPageVo)
                 .collect(Collectors.toList());
         return PageResult.of(records, pageInfo.getTotal(), pageInfo.getPageNum(), pageInfo.getPageSize());
+    }
+
+    @Override
+    public List<BuildingPageVO> listBuildings(BuildingPageQuery query) {
+        List<BuildingDO> result = buildingMapper.selectBuildingPage(
+                trimToNull(query.getKeyword()), trimToNull(query.getBuildingType()));
+        return PageMappingUtils.map(result, BuildingServiceImpl::toPageVo);
     }
 
     private static BuildingPageVO toPageVo(BuildingDO building) {

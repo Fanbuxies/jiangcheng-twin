@@ -1,6 +1,6 @@
 # 数字孪生合并进度
 
-更新时间：2026-08-20 02:27（Asia/Shanghai）
+更新时间：2026-08-20 13:16（Asia/Shanghai）
 
 ## 阶段 1：搬迁源码，编译通过
 
@@ -51,7 +51,8 @@
 
 ## 阶段 3：去 MyBatis-Plus 化
 
-- 状态：已完成，待本阶段提交
+- 状态：已提交
+- 提交：`3747822d refactor: 移除数字孪生 MyBatis-Plus`
 - Gate 2：通过
   - 探针：`ruoyi-twin/src/test/java/com/ruoyi/twin/gate/BuildingPaginationGate.java`
   - 结果：`GATE2_PASS total=29818 page1=20 page2=20 firstPageLastId=3536 secondPageFirstId=3537`
@@ -73,7 +74,8 @@
 
 ## 阶段 4：异常处理隔离
 
-- 状态：已完成，待本阶段提交
+- 状态：已提交
+- 提交：`f33a94cf test: 验证数字孪生异常隔离`
 - 生产代码：阶段 1 解决 Bean 冲突时已提前完成，本阶段未再改生产逻辑
   - Bean 名：`twinGlobalExceptionHandler`
   - 优先级：`@Order(1)`
@@ -85,6 +87,25 @@
   - 完整构建通过；宿主 12 个回归页面再次正常加载，参数与操作日志第二页结果保持正确
   - 管理页 Controller 尚未进入阶段 5，实际管理接口的 `AjaxResult` HTTP 响应留待阶段 5 联调
 
+## 阶段 5：若依管理页
+
+- 状态：已完成，待本阶段提交
+- 新增管理入口：
+  - `BuildingManageController`：建筑列表、新增、编辑、删除
+  - `DeviceManageController`：设备列表、新增、编辑、删除
+  - `AlarmManageController`：告警列表、新增、编辑、删除
+- 新增模板：`templates/twin/{building,device,alarm}/` 下列表、add、edit 共 9 个页面
+- 建筑几何处理：
+  - 未使用代码生成器，Controller 复用 `BuildingService` 与现有 Mapper
+  - 表单仅提交 lon/lat 数字输入，不提交 footprint / center
+  - footprint 与 center 仍由 `BuildingMapper.xml` 中的 PostGIS 函数构造
+- 管理端分页：VO 转换后保留 PageHelper 的 total、页码和页大小元数据
+- 阶段验证：
+  - `mvn -pl ruoyi-twin -am test-compile -DskipTests`：通过
+  - `ManagementControllerGate`：`MANAGEMENT_CONTROLLER_PASS controllers=3 routes=21 templates=9 total=5 rows=2`
+  - Gate 覆盖 Controller 继承关系、路由、权限、写操作日志、返回类型、模板、禁止 Mapper 注入、分页 total 回归与建筑表单字段
+  - `mvn clean package -DskipTests`：8 个 Reactor 模块全部 `SUCCESS`，`BUILD SUCCESS`
+
 ## 验证清单总览
 
 1. 系统管理回归：通过（用户/角色/菜单/部门/岗位/字典/参数列表；用户条件查询；参数翻页）
@@ -95,8 +116,8 @@
 6. 应用启动与映射解析：通过
 7. 数字孪生菜单：未实现
 8. Cesium 场景：未实现
-9. 三个管理页 CRUD：未实现
-10. 操作日志：未实现
+9. 三个管理页 CRUD：代码与静态契约通过，数据库 CRUD 联调留待最终验证
+10. 操作日志：三个管理页写操作均已加 `@Log`，落库结果留待最终验证
 11. 模拟器与 WebSocket：未验证
 12. 未登录和会话过期：未验证
 13. 日志增长速率：未验证
